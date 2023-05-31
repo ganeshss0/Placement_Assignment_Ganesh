@@ -33,8 +33,9 @@ def json_to_csv(url: str, file_name: str) -> None:
                 item['reclong'] = item.get('reclong')
                 item['geoloc_type'] = item.get('geolocation', {'type':None})['type']
                 item['geoloc_coordinate_long'], item['geoloc_coordinate_lat'] = item.get('geolocation', {'coordinates':[None, None]})['coordinates']
-                item['computed_region_cbhk_fwbd'] = item.pop(':@computed_region_cbhk_fwbd', None)
-                item['computed_region_nnqa_25f4'] = item.pop(':@computed_region_nnqa_25f4', None)
+                
+                item.pop(':@computed_region_cbhk_fwbd', None)
+                item.pop(':@computed_region_nnqa_25f4', None)
                 item.pop('geolocation', None)
             
             # Opening a file in write mode
