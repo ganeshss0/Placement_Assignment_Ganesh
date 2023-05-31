@@ -1,12 +1,10 @@
 
 ##############################
-###### Python Answer 4 #######
+###### Python Answer 5 #######
 ##############################
 
-# A program to download the data from the link and then read the data and convert the into
-# the proper structure and return it as a CSV file.
-
-
+# A program to download the data from the API link and then extract the following data with
+# proper formatting.
 
 
 
@@ -14,16 +12,19 @@
 ########## Solution ##########
 ##############################
 
+
+
 # importing urllib3 library for making https requests
 # json5 for converting json into dictionary
 # csv for writing data into csv format
 
 from urllib3 import PoolManager, exceptions
 import csv, json5
+import re, time
 
 
 
-def json_to_csv(url: str, file_name: str) -> None:
+def API_to_csv(url: str, file_name: str = 'data.csv') -> None:
     '''Download json data from url and write data to given file_name after convert json in csv.'''
 
     https = PoolManager()
@@ -36,17 +37,22 @@ def json_to_csv(url: str, file_name: str) -> None:
         try:
             # loading the json data into python dictionary
             data = json5.loads(response.data)
+            data = data['_embedded']['episodes']
 
             # formating the data
             for item in data:
-                item['reclat'] = item.get('reclat')
-                item['reclong'] = item.get('reclong')
-                item['geoloc_type'] = item.get('geolocation', {'type':None})['type']
-                item['geoloc_coordinate_long'], item['geoloc_coordinate_lat'] = item.get('geolocation', {'coordinates':[None, None]})['coordinates']
-                
-                item.pop(':@computed_region_cbhk_fwbd', None)
-                item.pop(':@computed_region_nnqa_25f4', None)
-                item.pop('geolocation', None)
+                # converting 24 hour time to 12 hour time
+                item['airtime'] = time.strftime('%I:%M %p', time.strptime(item['airtime'], '%H:%M'))
+                item['average_rating'] = item['rating']['average']
+
+                # removing the paragraph tag from string
+                item['summary'] = re.findall('<p>(.+)</p>', item['summary'])[0]
+                item['medium_image'] = item['image']['medium']
+                item['original_image'] = item['image']['original']
+
+                # removing keys that are not using
+                item.pop('airstamp'), item.pop('rating')
+                item.pop('image'), item.pop('_links')
             
             # Opening a file in write mode
             with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
@@ -74,5 +80,5 @@ def json_to_csv(url: str, file_name: str) -> None:
 
 if __name__ == '__main__':
 
-    url = 'https://data.nasa.gov/resource/y77d-th95.json'
-    json_to_csv(url, 'Meteorite_data.csv')
+    url = 'http://api.tvmaze.com/singlesearch/shows?q=westworld&embed=episodes'
+    API_to_csv(url)
