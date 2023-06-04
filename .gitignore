@@ -1,1 +1,7 @@
 Python/.scrap
+.tmp/
+__pycache__
+*.vectorized_metadata
+.noteablekeep
+*.py[cod]
+*.vectorized_content
